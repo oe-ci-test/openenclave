@@ -8,27 +8,33 @@ ARG GNAME=jenkins
 ARG UID=1000
 ARG GID=1000
 
-COPY scripts/ansible /ansible
-ADD scripts/install-windows-prereqs.ps1 /
+RUN apt-get update && apt-get -y upgrade
 
-RUN apt-get update && \
-    apt-get -y upgrade && \
-    apt-get -y install make build-essential git jq vim curl wget netcat && \
-    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | \
-      tee /etc/apt/sources.list.d/azure-cli.list && \
-    wget https://packages.microsoft.com/keys/microsoft.asc && \
-    apt-key add microsoft.asc && \
-    apt-get update && \
-    apt-get -y install apt-transport-https azure-cli unzip && \
-    wget https://releases.hashicorp.com/terraform/0.12.18/terraform_0.12.18_linux_amd64.zip && \
-    unzip terraform_0.12.18_linux_amd64.zip -d /usr/sbin && \
-    rm terraform_0.12.18_linux_amd64.zip && \
-    curl https://oejenkinsciartifacts.blob.core.windows.net/oe-engine/latest/bin/oe-engine -o /usr/bin/oe-engine && \
-    chmod +x /usr/bin/oe-engine && \
-    wget https://releases.hashicorp.com/packer/1.4.5/packer_1.4.5_linux_amd64.zip && \
-    unzip packer_1.4.5_linux_amd64.zip -d /usr/sbin && \
-    rm packer_1.4.5_linux_amd64.zip && \
-    groupadd --gid ${GID} ${GNAME} && \
-    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME} && \
-    chown ${UID}:${GID} -R /ansible && \
+RUN groupadd --gid ${GID} ${GNAME} && \
+    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
+
+COPY scripts/ansible /ansible
+COPY scripts/install-windows-prereqs.ps1 /
+
+RUN chown ${UID}:${GID} -R /ansible && \
     /ansible/install-ansible.sh
+
+RUN apt-get -y install make build-essential git jq vim curl wget netcat apt-transport-https unzip
+
+WORKDIR /tmp
+
+RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | tee /etc/apt/sources.list.d/azure-cli.list && \
+    wget https://packages.microsoft.com/keys/microsoft.asc && \
+    apt-key add microsoft.asc && rm microsoft.asc && \
+    apt-get update && apt-get -y install azure-cli
+
+RUN wget https://releases.hashicorp.com/terraform/0.12.18/terraform_0.12.18_linux_amd64.zip && \
+    unzip terraform_0.12.18_linux_amd64.zip -d /usr/sbin && \
+    rm terraform_0.12.18_linux_amd64.zip
+
+RUN curl https://oejenkinsciartifacts.blob.core.windows.net/oe-engine/latest/bin/oe-engine -o /usr/bin/oe-engine && \
+    chmod +x /usr/bin/oe-engine
+
+RUN wget https://releases.hashicorp.com/packer/1.4.5/packer_1.4.5_linux_amd64.zip && \
+    unzip packer_1.4.5_linux_amd64.zip -d /usr/sbin && \
+    rm packer_1.4.5_linux_amd64.zip
