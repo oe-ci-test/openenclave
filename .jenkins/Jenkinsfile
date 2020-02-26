@@ -166,7 +166,7 @@ def checkCI() {
     }
 }
 
-def win2016LinuxElfBuild(String version, String compiler, String build_type) {
+def windowsLinuxElfBuild(String version, String compiler, String build_type) {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type}}") {
         node("nonSGX") {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -182,7 +182,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
         }
     }
     stage("Windows ${build_type}") {
-        node('SGXFLC-Windows-DCAP') {
+        node('SGXFLC-Windows-2019-DCAP') {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -201,10 +201,10 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
     }
 }
 
-def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF') {
-    def node_label = 'SGXFLC-Windows'
+def windowsCrossCompile(String build_type, String has_quote_provider = 'OFF') {
+    def node_label = 'SGX-Windows-2019'
     if (has_quote_provider == "ON") {
-        node_label = 'SGXFLC-Windows-DCAP'
+        node_label = 'SGXFLC-Windows-2019-DCAP'
     }
     stage("Windows ${build_type} with SGX ${has_quote_provider}") {
         node(node_label) {
@@ -299,7 +299,7 @@ def ACCHostVerificationTest(String version, String build_type) {
 
         /* Windows nonSGX stage. */
         stage("Windows nonSGX Verify Quote") {
-            node("nonSGX-Windows") {
+            node("SGX-Windows-2019") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
                     cleanWs()
                     checkout scm
@@ -368,15 +368,15 @@ try{
             "Sim 1804 clang-7 SGX1 Release" :                      { simulationTest('18.04', 'SGX1', 'Release')},
             "Sim 1804 clang-7 SGX1-FLC Debug" :                    { simulationTest('18.04', 'SGX1FLC', 'Debug')},
             "Sim 1804 clang-7 SGX1-FLC Release" :                  { simulationTest('18.04', 'SGX1FLC', 'Release')},
-            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
-            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
-            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
-            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
-            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
-            "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
-            "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') },
-            "Win2016 Debug Cross Compile with DCAP libs" :         { win2016CrossCompile('Debug', 'ON') },
-            "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
+            "Win2019 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { windowsLinuxElfBuild('16.04', 'clang-7', 'Debug') },
+            "Win2019 Ubuntu1604 clang-7 Release Linux-Elf-build" : { windowsLinuxElfBuild('16.04', 'clang-7', 'Release') },
+            "Win2019 Ubuntu1804 clang-7 Debug Linux-Elf-build" :   { windowsLinuxElfBuild('18.04', 'clang-7', 'Debug') },
+            "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build" : { windowsLinuxElfBuild('18.04', 'clang-7', 'Release') },
+            "Win2019 Ubuntu1804 gcc Debug Linux-Elf-build" :       { windowsLinuxElfBuild('18.04', 'gcc', 'Debug') },
+            "Win2019 Debug Cross Compile" :                        { windowsCrossCompile('Debug') },
+            "Win2019 Release Cross Compile" :                      { windowsCrossCompile('Release') },
+            "Win2019 Debug Cross Compile with DCAP libs" :         { windowsCrossCompile('Debug', 'ON') },
+            "Win2019 Release Cross Compile with DCAP libs" :       { windowsCrossCompile('Release', 'ON') },
             "Host verification 1604 Debug" :                       { ACCHostVerificationTest('16.04', 'Debug') },
             "Host verification 1604 Release" :                     { ACCHostVerificationTest('16.04', 'Release') },
             "Host verification 1804 Debug" :                       { ACCHostVerificationTest('18.04', 'Debug') },
