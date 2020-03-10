@@ -8,7 +8,7 @@ OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
 OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
 def buildDockerImages() {
-    node("nonSGX") {
+    node(params.AGENTS_LABEL) {
         timeout(GLOBAL_TIMEOUT_MINUTES) {
             stage("Checkout") {
                 cleanWs()
