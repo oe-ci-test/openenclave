@@ -41,7 +41,7 @@ def buildLinuxManagedImage(String os_type, String version) {
     }
 }
 
-def buildWindowsManagedImage(String os_series, String img_name_suffix, String playbook_file_name, Boolean dcap_testing_node) {
+def buildWindowsManagedImage(String os_series, String img_name_suffix, String launch_configuration) {
     node(params.AGENTS_LABEL) {
         stage(img_name_suffix) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -116,10 +116,10 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String pl
                         echo "ansible_user: ${JENKINS_USER_NAME}" > $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
                         echo "ansible_password: ${JENKINS_USER_PASSWORD}" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
                         echo "ansible_winrm_transport: ntlm" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
-                        echo "dcap_testing_node: ${dcap_testing_node}" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
+                        echo "launch_configuration: ${launch_configuration}" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
 
                         cd $WORKSPACE/scripts/ansible
-                        retrycmd_if_failure 5 10 2h ansible-playbook ${playbook_file_name}
+                        retrycmd_if_failure 5 10 2h ansible-playbook oe-windows-acc-setup.yml
                         retrycmd_if_failure 5 10 30m ansible-playbook jenkins-packer.yml
 
                         az vm run-command invoke \
@@ -170,6 +170,6 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String pl
 parallel "Build Ubuntu 16.04"              : { buildLinuxManagedImage("ubuntu", "16.04") },
          "Build Ubuntu 18.04"              : { buildLinuxManagedImage("ubuntu", "18.04") },
          "Build RHEL 8"                    : { buildLinuxManagedImage("rhel", "8") },
-         "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX",  "oe-windows-acc-setup.yml", false) },
-         "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP", "oe-windows-acc-setup.yml", true) },
-         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX", "oe-windows-nonSGX-setup.yml", false) }
+         "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX", "SGX1") },
+         "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP", "SGX1FLC") },
+         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX", "SGX1FLC-NoDriver") }
