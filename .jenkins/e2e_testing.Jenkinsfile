@@ -4,7 +4,7 @@ stage("Build Docker Images") {
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: "e2e"),
-                       string(name: 'AGENTS_LABEL', value: "nonSGX-e2e"),
+                       string(name: 'AGENTS_LABEL', value: "images-build-e2e"),
                        booleanParam(name: 'TAG_LATEST',value: false)]
 }
 
@@ -14,7 +14,8 @@ stage("Build Jenkins Agents images") {
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'OE_DEPLOY_IMAGE', value: "oetools-deploy:e2e"),
                        string(name: 'IMAGE_ID', value: "e2e"),
-                       string(name: 'AGENTS_LABEL', value: "nonSGX-e2e")]
+                       string(name: 'DOCKER_TAG', value: "e2e"),
+                       string(name: 'AGENTS_LABEL', value: "images-build-e2e")]
 }
 
 stage("Run tests on new Agents") {
